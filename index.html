@@ -212,16 +212,16 @@
         .sheet-overlay { 
             z-index: 9998; /* Di bawah Z-index Nav (9999) jadi laci keluar dari belakang nav */
             display: flex; align-items: flex-end; justify-content: center; 
-            /* Ganjal persis sebesar tinggi navigasi, jadi gak ada space bolong */
-            padding-bottom: calc(65px + env(safe-area-inset-bottom, 0px)); 
+            /* Dibuat kosong (gak ada padding-bottom) biar lacinya mentok ke bawah layar */
         }
         .sheet-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
 
         .bottom-sheet {
             width: 100%; max-width: 480px; background: #fffdf5;
             border: 2px solid var(--ink); border-bottom: none;
-            border-radius: 24px 24px 0 0; padding: 20px 24px;
-            /* Flex otomatis taruh di atas ganjalan padding overlay, GAK PAKE absolute */
+            border-radius: 24px 24px 0 0; 
+            /* Padding bawah di gedein (85px) biar E-Wallet gak ketutupan navigasi */
+            padding: 20px 24px calc(85px + env(safe-area-inset-bottom, 0px));
             position: relative; 
             transform: translateY(100%); 
             transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
