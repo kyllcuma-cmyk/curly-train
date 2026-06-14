@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CreatorLife Camp | Sketch Network</title>
+    <meta name="description" content="Platform afiliasi CreatorLife Camp. Ekosistem jaringan node premium.">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            /* Sketch Theme Palette */
+            --bg-paper: #fdfbf7;
+            --bg-paper-darker: #f4f1ea;
+            --ink: #1e1e24;
+            --ink-light: #52525b;
+            
+            /* Marker Highlights */
+            --marker-blue: #bfdbfe;
+            --marker-blue-strong: #3b82f6;
+            --marker-yellow: #fef08a;
+            --marker-yellow-strong: #eab308;
+            --marker-green: #bbf7d0;
+            --marker-green-strong: #22c55e;
+            --marker-red: #fecaca;
+            --marker-red-strong: #ef4444;
+
+            /* Hand-drawn Borders */
+            --sketch-border: 2px solid var(--ink);
+            --sketch-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            --sketch-radius-alt: 15px 225px 15px 255px/255px 15px 225px 15px;
+            --sketch-shadow: 4px 4px 0px var(--ink);
+
+            /* Typography */
+            --font-sans: 'Inter', sans-serif;
+            --font-hand: 'Kalam', cursive;
+        }
+
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        body {
+            background-color: var(--bg-paper);
+            background-image: radial-gradient(#d4d4d8 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--ink);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        h1, h2, h3, .hand-font { font-family: var(--font-hand); font-weight: 700; letter-spacing: 0.5px; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--ink-light); border-radius: 10px; }
+
+        /* --- Global Animations --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes subtleWobble { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(1deg); } }
+
+        /* --- Global Loader --- */
+        #loader-overlay {
+            position: fixed; inset: 0; 
+            background: rgba(253, 251, 247, 0.9);
+            z-index: 2000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px;
+            opacity: 0; visibility: hidden; pointer-events: none; transition: all 0.3s ease;
+        }
+        #loader-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
+        .spinner {
+            width: 36px; height: 36px; 
+            border: 3px solid var(--marker-blue); 
+            border-top-color: var(--ink);
+            border-radius: 50%;
+            animation: spin 1s infinite cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* --- Toast Notification --- */
+        .toast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: var(--bg-paper); border: var(--sketch-border); 
+            border-radius: var(--sketch-radius-alt);
+            padding: 10px 20px; display: flex; align-items: center; gap: 10px;
+            font-size: 13px; font-weight: 600; font-family: var(--font-hand);
+            z-index: 99999; box-shadow: var(--sketch-shadow);
+            transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none;
+        }
+        .toast.show { top: 24px; }
+        .toast.success { background: var(--marker-green); }
+        .toast.error { background: var(--marker-red); }
+
+        /* --- AUTH SCREEN --- */
+        #auth-screen { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .auth-logo { width: 70px; height: 70px; background: var(--marker-yellow); border: var(--sketch-border); border-radius: var(--sketch-radius); box-shadow: var(--sketch-shadow); display: flex; justify-content: center; align-items: center; margin: 0 auto 16px; transform: rotate(-3deg); animation: subtleWobble 4s infinite ease-in-out; }
+        .auth-card { width: 100%; max-width: 320px; background: white; border: var(--sketch-border); border-radius: var(--sketch-radius-alt); padding: 24px; box-shadow: var(--sketch-shadow); }
+        .auth-form { display: flex; flex-direction: column; gap: 14px; transition: opacity 0.3s; }
+        .auth-form.hidden { display: none; opacity: 0; }
+        .input-label { font-family: var(--font-hand); font-size: 14px; font-weight: 700; color: var(--ink); }
+        .input-control { width: 100%; padding: 12px; background: var(--bg-paper-darker); border: var(--sketch-border); border-radius: var(--sketch-radius); color: var(--ink); font-size: 13px; font-family: var(--font-sans); outline: none; transition: all 0.2s; }
+        .input-control:focus { background: white; box-shadow: 3px 3px 0px var(--marker-blue); transform: translateY(-2px) translateX(-2px); }
+        .btn-primary { width: 100%; padding: 14px; border-radius: var(--sketch-radius-alt); background: var(--ink); color: white; border: var(--sketch-border); font-size: 16px; font-family: var(--font-hand); cursor: pointer; transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 6px; box-shadow: var(--sketch-shadow); }
+        .btn-primary:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px var(--ink); }
+        .btn-primary:hover { opacity: 0.9; }
+        .auth-switch { text-align: center; margin-top: 16px; font-size: 12px; font-weight: 500; }
+        .auth-switch span { color: var(--marker-blue-strong); font-weight: 700; text-decoration: underline; cursor: pointer; }
+
+        /* --- MAIN DASHBOARD --- */
+        #main-app { display: none; padding-bottom: 80px; }
+        .navbar { position: sticky; top: 0; z-index: 100; background: var(--bg-paper); border-bottom: var(--sketch-border); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo { width: 28px; height: 28px; background: var(--marker-yellow); border: 2px solid var(--ink); border-radius: 8px; display: flex; justify-content: center; align-items: center; transform: rotate(5deg); }
+        .nav-title { font-family: var(--font-hand); font-size: 20px; }
+        .btn-logout { background: var(--marker-red); border: 2px solid var(--ink); color: var(--ink); border-radius: var(--sketch-radius); padding: 4px 10px; font-size: 13px; font-family: var(--font-hand); cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 2px 2px 0px var(--ink); transition: all 0.2s; }
+        .btn-logout:active { transform: translate(1px,1px); box-shadow: 0 0 0; }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+            background: white; border-top: var(--sketch-border); 
+            z-index: 9999; /* HIGHEST Z-INDEX, di atas Bottom Sheet */
+            display: flex; justify-content: space-around; align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ink-light); cursor: pointer; font-size: 11px; font-weight: 600; padding: 8px 16px; border-radius: 12px; transition: all 0.2s; }
+        .nav-item.active { color: var(--ink); background: var(--marker-yellow); border: 2px solid var(--ink); transform: translateY(-4px); box-shadow: 2px 2px 0px var(--ink); }
+
+        /* Content Area */
+        .container { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 70px; }
+        .page { display: none; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .page.active { display: block; }
+        .sketch-card { background: white; border: var(--sketch-border); border-radius: var(--sketch-radius-alt); padding: 16px; box-shadow: var(--sketch-shadow); margin-bottom: 20px; position: relative; transition: transform 0.2s; }
+        .sketch-card:hover { transform: rotate(-0.5deg) scale(1.01); }
+        
+        .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+        .card-title { font-family: var(--font-hand); font-size: 18px; color: var(--ink); }
+        
+        .balance-box { background: var(--marker-blue); padding: 16px; border-radius: var(--sketch-radius); border: 2px dashed var(--ink); margin-bottom: 16px; text-align: center; }
+        .balance-lbl { font-weight: 600; font-size: 12px; margin-bottom: 4px; }
+        .balance-val { font-family: var(--font-hand); font-size: 36px; font-weight: 700; line-height: 1; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .stat-box { background: var(--bg-paper); border: var(--sketch-border); border-radius: var(--sketch-radius-alt); padding: 12px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: 2px 2px 0px var(--ink); transition: transform 0.2s; }
+        .stat-box:hover { transform: translateY(-2px); box-shadow: 4px 4px 0px var(--ink); }
+        .stat-icon { padding: 6px; border-radius: 50%; border: 2px solid var(--ink); margin-bottom: 4px; }
+        .icon-blue { background: var(--marker-blue); }
+        .icon-green { background: var(--marker-green); }
+        .icon-yellow { background: var(--marker-yellow); }
+        .stat-val { font-family: var(--font-hand); font-size: 22px; font-weight: 700; line-height: 1; }
+        .stat-lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; }
+
+        .list-container { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-paper-darker); border: 2px dashed var(--ink); border-radius: var(--sketch-radius); cursor: pointer; transition: all 0.2s; }
+        .list-item:hover { background: var(--marker-blue); border-style: solid; transform: translateX(2px); }
+        .list-item:active { transform: scale(0.98); }
+        .list-icon { width: 32px; height: 32px; border: 2px solid var(--ink); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--font-hand); font-weight: 700; }
+        .item-title { font-weight: 700; font-size: 13px; }
+        .item-sub { font-size: 11px; color: var(--ink-light); }
+        .item-amount { font-family: var(--font-hand); font-size: 16px; font-weight: 700; }
+
+        .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 2px solid var(--ink); }
+        .badge.verified { background: var(--marker-green); }
+        .badge.pending { background: var(--marker-yellow); }
+
+        .chip-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .chip { padding: 8px 12px; border: var(--sketch-border); border-radius: var(--sketch-radius); background: white; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 2px 2px 0 var(--ink); transition: all 0.1s; }
+        .chip:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--ink); }
+        .chip:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
+        .chip.active { background: var(--ink); color: white; transform: translate(2px, 2px); box-shadow: 0 0 0; }
+        .chip.nominal { font-family: var(--font-hand); font-size: 16px; flex: 1; min-width: calc(25% - 8px); text-align: center; }
+
+        .info-box { background: var(--marker-yellow); border: var(--sketch-border); padding: 12px; border-radius: var(--sketch-radius-alt); margin-bottom: 16px; display: flex; gap: 8px; font-size: 12px; transform: rotate(-1deg); }
+
+        .todo-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-bottom: 2px dashed var(--ink-light); }
+        .todo-item:last-child { border-bottom: none; }
+        .todo-check { width: 20px; height: 20px; border: 2px solid var(--ink); border-radius: 4px; display: flex; justify-content: center; align-items: center; flex-shrink: 0;}
+        .todo-check.done { background: var(--marker-green); }
+        .ref-box { background: white; border: var(--sketch-border); border-radius: var(--sketch-radius); padding: 12px; text-align: center; box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1); }
+        .ref-code { font-family: var(--font-hand); font-size: 24px; font-weight: 700; color: var(--marker-blue-strong); }
+        .btn-action { flex: 1; padding: 10px; background: white; border: var(--sketch-border); border-radius: var(--sketch-radius-alt); font-weight: 600; box-shadow: 2px 2px 0 var(--ink); display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;}
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--ink); }
+        .btn-action:active { transform: translate(2px,2px); box-shadow: 0 0 0; }
+        .instruction-list { margin-left: 24px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
+        .instruction-list li { padding-left: 4px; }
+
+        /* --- MODALS & OVERLAYS --- */
+        .modal-overlay, .sheet-overlay {
+            position: fixed; inset: 0; background: rgba(30, 30, 36, 0.6);
+            backdrop-filter: blur(2px); 
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        /* Modal Resi */
+        .modal-overlay { z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
+        .receipt-paper { width: 100%; max-width: 320px; background: #fffdf5; border: 2px dashed var(--ink); padding: 20px; transform: scale(0.9) rotate(-1deg); box-shadow: 6px 6px 0px var(--ink); border-radius: 4px; position: relative; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-overlay.show .receipt-paper { transform: scale(1) rotate(-1deg); }
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dotted var(--ink-light); padding-bottom: 4px;}
+        .receipt-total { font-size: 18px; font-weight: bold; border-top: 2px dashed var(--ink); padding-top: 8px; margin-top: 8px; border-bottom: none;}
+
+        /* --- BOTTOM SHEET E-WALLET (FIXED) --- */
+        .sheet-overlay { 
+            z-index: 9998; /* Di bawah Z-index Nav (9999) jadi laci keluar dari belakang nav */
+            display: flex; align-items: flex-end; justify-content: center; 
+            /* Ganjal persis sebesar tinggi navigasi, jadi gak ada space bolong */
+            padding-bottom: calc(65px + env(safe-area-inset-bottom, 0px)); 
+        }
+        .sheet-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
+
+        .bottom-sheet {
+            width: 100%; max-width: 480px; background: #fffdf5;
+            border: 2px solid var(--ink); border-bottom: none;
+            border-radius: 24px 24px 0 0; padding: 20px 24px;
+            /* Flex otomatis taruh di atas ganjalan padding overlay, GAK PAKE absolute */
+            position: relative; 
+            transform: translateY(100%); 
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+            max-height: calc(100vh - 120px); overflow-y: auto; 
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+        }
+        .sheet-overlay.show .bottom-sheet { transform: translateY(0); }
+        
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed var(--ink); padding-bottom: 12px; }
+        .sheet-content { display: flex; flex-direction: column; gap: 10px; }
+        .sheet-item {
+            padding: 14px; background: white; border: var(--sketch-border);
+            border-radius: var(--sketch-radius-alt); font-weight: 600; font-size: 14px;
+            cursor: pointer; box-shadow: 2px 2px 0 var(--ink);
+            transition: all 0.2s; display: flex; align-items: center; justify-content: space-between;
+        }
+        .sheet-item:hover { background: var(--marker-yellow); border-color: var(--ink); transform: translate(-2px, -2px) rotate(-0.5deg); box-shadow: 4px 4px 0 var(--ink); }
+        .sheet-item:active { transform: translate(2px,2px); box-shadow: 0 0 0; }
+    </style>
+</head>
+<body>
+
+    <div id="loader-overlay">
+        <div class="spinner"></div>
+        <div style="font-family: var(--font-hand); font-size: 18px; font-weight: 700;">Nulis data bentar...</div>
+    </div>
+
+    <div id="toast" class="toast info">
+        <i data-lucide="info"></i><span id="toast-msg">Notif</span>
+    </div>
+
+    <div id="auth-screen">
+        <div class="auth-header">
+            <div class="auth-logo"><i data-lucide="pen-tool" size="36" stroke-width="2.5"></i></div>
+            <h1 class="auth-title">CreatorLife Camp</h1>
+            <div class="auth-subtitle" style="font-family: var(--font-hand); text-align: center; margin-bottom: 20px;">"Jaringan Afiliasi Gaya Bebas"</div>
+        </div>
+
+        <div class="auth-card">
+            <div id="form-login" class="auth-form">
+                <div class="input-group">
+                    <span class="input-label">Node ID</span>
+                    <input id="log-node" type="text" class="input-control" placeholder="Tulis ID mu...">
+                </div>
+                <div class="input-group">
+                    <span class="input-label">Password</span>
+                    <input id="log-pass" type="password" class="input-control" placeholder="••••••••">
+                </div>
+                <button class="btn-primary" onclick="processLogin()">Masuk <i data-lucide="log-in" size="18"></i></button>
+                <div class="auth-switch">Belum punya kertas? <span onclick="switchForm('register')">Daftar Sini</span></div>
+            </div>
+
+            <div id="form-register" class="auth-form hidden">
+                <div class="input-group">
+                    <span class="input-label">Bikin Node ID</span>
+                    <input id="reg-node" type="text" class="input-control" placeholder="ID Unik">
+                </div>
+                <div class="input-group">
+                    <span class="input-label">Password</span>
+                    <input id="reg-pass" type="password" class="input-control" placeholder="••••••••">
+                </div>
+                <div class="input-group">
+                    <span class="input-label">Ulangi Password</span>
+                    <input id="reg-pass2" type="password" class="input-control" placeholder="••••••••">
+                </div>
+                <button class="btn-primary" onclick="processRegister()" style="background: var(--marker-green); color: var(--ink);">Cetak Node <i data-lucide="hammer" size="18"></i></button>
+                <div class="auth-switch">Udah nyatet ID? <span onclick="switchForm('login')">Masuk Aja</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="nav-logo"><i data-lucide="pen-tool" size="16" stroke-width="2.5"></i></div>
+                <div class="nav-title">CreatorLife</div>
+            </div>
+            <button class="btn-logout" onclick="processLogout()">
+                <i data-lucide="log-out" size="14" stroke-width="2.5"></i> Keluar
+            </button>
+        </nav>
+
+        <div class="container">
+            
+            <div id="page-dashboard" class="page active">
+                <div class="sketch-card" style="padding-bottom: 24px;">
+                    <div class="balance-box">
+                        <div class="balance-lbl" style="display: flex; justify-content: center; align-items: center; gap: 6px;">SALDO KEKAYAAN <i data-lucide="banknote" size="16" stroke-width="2.5"></i></div>
+                        <div class="balance-val" id="ui-balance">Rp 0</div>
+                    </div>
+                    
+                    <div class="card-header"><h3 class="card-title">Statistik Jaringan</h3></div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-icon icon-blue"><i data-lucide="users" size="18" stroke-width="2.5"></i></div>
+                            <div class="stat-val" id="stat-all">0</div>
+                            <div class="stat-lbl">Diundang</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-icon icon-green"><i data-lucide="check-circle" size="18" stroke-width="2.5"></i></div>
+                            <div class="stat-val" id="stat-active">0</div>
+                            <div class="stat-lbl">Valid</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-icon icon-yellow"><i data-lucide="clock" size="18" stroke-width="2.5"></i></div>
+                            <div class="stat-val" id="stat-pending">0</div>
+                            <div class="stat-lbl">Nunggu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sketch-card" style="background: var(--marker-yellow); transform: rotate(-1deg); border-color: var(--ink);">
+                    <div class="card-header" style="margin-bottom: 8px;">
+                        <i data-lucide="scroll-text" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Aturan Main & Cara Cuan</h3>
+                    </div>
+                    <ul style="padding-left: 20px; font-size: 12px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                        <li>Sebar <b>Link Referral</b> lu ke tongkrongan atau sosmed.</li>
+                        <li>Pastikan temen lu daftar & <b>Verifikasi Node</b> biar cuan lu nambah!</li>
+                        <li>Biar gampang, langsung gas ke tab <b>Tugas</b> buat *copy* teks promosi siap pakai.</li>
+                    </ul>
+                    <button class="btn-primary" style="background: var(--ink); color: white; padding: 12px; font-size: 14px; width: 100%; display: flex; justify-content: center; gap: 8px;" onclick="document.querySelectorAll('.bottom-nav .nav-item')[2].click()">
+                        Gas ke Tab Tugas <i data-lucide="arrow-right" size="16"></i>
+                    </button>
+                </div>
+
+                <div class="sketch-card">
+                    <div class="card-header">
+                        <i data-lucide="git-branch" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Bawahan Gw</h3>
+                    </div>
+                    <div class="list-container" id="downline-list">
+                        <div class="empty-state" style="text-align: center; padding: 20px 0;">
+                            <div class="empty-icon"><i data-lucide="ghost" size="32" stroke-width="2"></i></div>
+                            <div style="font-family: var(--font-hand); font-size: 16px;">Sepi bet, ayo sebar link!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-withdraw" class="page">
+                <div class="sketch-card">
+                    <div class="balance-box" style="transform: rotate(-1deg); margin-bottom: 20px; background: var(--marker-yellow);">
+                        <div class="balance-lbl" style="display: flex; justify-content: center; align-items: center; gap: 6px;">SALDO BISA DITARIK <i data-lucide="coins" size="16" stroke-width="2.5"></i></div>
+                        <div class="balance-val" id="ui-balance-wd">Rp 0</div>
+                    </div>
+
+                    <div class="card-header">
+                        <i data-lucide="piggy-bank" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Tarik Cuan</h3>
+                    </div>
+
+                    <div class="info-box">
+                        <i data-lucide="alert-circle" size="16"></i>
+                        <span style="font-family: var(--font-hand); font-size: 13px;">
+                            <b>Info:</b> 6k-10k cuma bisa GoPay. Nominal 20k-200k ada admin fee 2k ya bos!
+                        </span>
+                    </div>
+
+                    <div class="input-label" style="margin-bottom: 6px;">Pilih Dompet</div>
+                    <button class="btn-primary" style="background: white; color: var(--ink); margin-bottom: 16px; margin-top: 0; justify-content: space-between;" onclick="openWalletSheet()">
+                        <span id="selected-wallet-text">Pilih Dompet E-Wallet...</span>
+                        <i data-lucide="chevron-down" size="18"></i>
+                    </button>
+
+                    <div class="input-group" style="margin-bottom: 12px;">
+                        <input id="wd-name" type="text" class="input-control" placeholder="Nama Akun E-Wallet">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 20px;">
+                        <input id="wd-number" type="number" class="input-control" placeholder="Nomor HP/Rek">
+                    </div>
+
+                    <div class="input-label" style="margin-bottom: 6px;">Berapa Duit?</div>
+                    <div class="chip-group" id="amount-selector">
+                        <div class="chip nominal" onclick="selectAmount(this, 6000)">6k</div>
+                        <div class="chip nominal" onclick="selectAmount(this, 10000)">10k</div>
+                        <div class="chip nominal" onclick="selectAmount(this, 20000)">20k</div>
+                        <div class="chip nominal" onclick="selectAmount(this, 30000)">30k</div>
+                        <div class="chip nominal" onclick="selectAmount(this, 40000)">40k</div>
+                        <div class="chip nominal" onclick="selectAmount(this, 50000)">50k</div>
+                        <div class="chip nominal" onclick="selectAmount(this, 100000)">100k</div>
+                        <div class="chip nominal" onclick="selectAmount(this, 200000)">200k</div>
+                    </div>
+
+                    <button class="btn-primary" onclick="submitWithdrawal()" style="background: var(--ink); color: white;">
+                        Cairkan Sekarang <i data-lucide="banknote" size="18"></i>
+                    </button>
+                </div>
+
+                <div class="sketch-card">
+                    <div class="card-header">
+                        <i data-lucide="receipt" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Bon Catatan</h3>
+                    </div>
+                    <div class="list-container" id="history-list">
+                        <div class="empty-state" style="text-align: center; padding: 20px 0;">
+                            <div class="empty-icon"><i data-lucide="coffee" size="32" stroke-width="2"></i></div>
+                            <div style="font-family: var(--font-hand); font-size: 16px;">Belum pernah narik nih.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-tugas" class="page">
+                <div class="sketch-card" style="background: var(--marker-blue);">
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 4px;">
+                        <div class="list-icon" style="background: white; width: 48px; height: 48px; font-size: 24px;" id="ui-avatar-tugas">M</div>
+                        <div>
+                            <div class="card-title" id="ui-name-tugas" style="font-size: 22px;">---</div>
+                            <div class="badge pending" id="ui-verif-badge-tugas"><i data-lucide="award" size="12"></i> Afiliator Pro</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sketch-card">
+                    <div class="card-header">
+                        <i data-lucide="network" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Statistik Pasukan Lu</h3>
+                    </div>
+                    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 8px;">
+                        <div class="stat-box" style="background: var(--marker-yellow);">
+                            <div class="stat-icon" style="background: white; border-width: 2px;"><i data-lucide="users" size="16"></i></div>
+                            <div class="stat-val" id="tugas-stat-all">0</div>
+                            <div class="stat-lbl" style="font-size: 9px;">Total Bawahan</div>
+                        </div>
+                        <div class="stat-box" style="background: var(--marker-green);">
+                            <div class="stat-icon" style="background: white; border-width: 2px;"><i data-lucide="gem" size="16"></i></div>
+                            <div class="stat-val" id="tugas-stat-active">0</div>
+                            <div class="stat-lbl" style="font-size: 9px;">Valid (Cuan)</div>
+                        </div>
+                        <div class="stat-box" style="background: var(--bg-paper-darker);">
+                            <div class="stat-icon" style="background: white; border-width: 2px;"><i data-lucide="hourglass" size="16"></i></div>
+                            <div class="stat-val" id="tugas-stat-pending">0</div>
+                            <div class="stat-lbl" style="font-size: 9px;">Pending</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; text-align: center; color: var(--ink-light);">*Bawahan yang valid = Duit nambah!</div>
+                </div>
+
+                <div class="sketch-card">
+                    <div class="card-header">
+                        <i data-lucide="clipboard-list" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Misi Cari Cuan</h3>
+                    </div>
+                    
+                    <div class="todo-item" style="flex-direction: column; align-items: stretch;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                            <div class="todo-check done"><i data-lucide="check" size="14"></i></div>
+                            <div><b>1. Copy Kode / Link Lu</b><br><span style="font-size: 11px; color: var(--ink-light);">Bagikan link ini ke tongkrongan.</span></div>
+                        </div>
+                        <div class="ref-box">
+                            <div class="ref-code" id="ui-refcode-tugas">------</div>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                            <button class="btn-action" onclick="copyReferralLink()"><i data-lucide="copy" size="14"></i> Salin Link</button>
+                            <button class="btn-action" style="background: var(--marker-green);" onclick="shareLink()"><i data-lucide="share-2" size="14"></i> Bagikan</button>
+                        </div>
+                    </div>
+
+                    <div class="todo-item">
+                        <div class="todo-check"><i data-lucide="help-circle" size="14"></i></div>
+                        <div style="width: 100%;">
+                            <b>2. Cara Kerja & Undang Teman</b>
+                            <ol class="instruction-list">
+                                <li>Bagikan link rujukan (referral) lu ke temen atau sosmed.</li>
+                                <li>Suruh temen lu klik link tersebut dan daftar bikin <b>Node ID</b>.</li>
+                                <li><b>PENTING:</b> Pastikan temen lu verifikasi akun/node-nya biar masuk hitungan valid.</li>
+                                <li>Tiap bawahan yang valid, saldo kekayaan lu auto nambah!</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sketch-card" style="background: var(--marker-yellow); transform: rotate(1deg);">
+                    <div class="card-header">
+                        <i data-lucide="megaphone" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Konten Promosi Siap Pake</h3>
+                    </div>
+                    <p style="font-size: 11px; margin-bottom: 12px;">Nggak usah pusing mikir *caption*. Tinggal <b>Copy</b> teks di bawah ini dan *share* ke grup FB, Telegram, atau WA lu!</p>
+                    
+                    <div style="background: white; border: var(--sketch-border); border-radius: var(--sketch-radius-alt); padding: 12px; font-size: 12px;">
+                        
+                        <p id="promo-text-preview" style="margin-bottom: 8px; line-height: 1.6;">
+                            <span style="color: var(--ink-light); font-style: italic;">Lagi nyiapin teks sakti lu...</span>
+                        </p>
+
+                        <button class="btn-action" style="width: 100%; margin-top: 12px; background: var(--ink); color: white;" onclick="copyPromoText()">
+                            <i data-lucide="copy" size="14"></i> Copy Teks Promosi
+                        </button>
+                    </div>
+
+                    <div class="info-box" style="margin-top: 16px; background: white; border: 2px dashed var(--marker-blue-strong); transform: rotate(0deg);">
+                        <i data-lucide="video" size="24" style="color: var(--marker-blue-strong);"></i>
+                        <div style="font-family: var(--font-sans); font-size: 12px;">
+                            <b>Mau Bikin Konten Sendiri? Gas! 🚀</b><br>
+                            Lu bisa bikin video TikTok, Reels, atau thread keren versi lu sendiri. Arahin penonton lu buat daftar lewat link utama:<br>
+                            <a href="https://miner.mineverse-chain.my.id/" style="color: var(--marker-blue-strong); font-weight: bold; word-break: break-all;">https://miner.mineverse-chain.my.id/</a><br>
+                            <i style="color: var(--ink-light); display: inline-block; margin-top: 4px;">*Penting: Ingatin mereka buat masukin Kode Referral lu pas daftar!</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-profil" class="page">
+                
+                <div class="sketch-card" style="text-align: center; background: var(--marker-blue);">
+                    <div class="auth-logo" style="margin: 0 auto 12px; background: white; width: 80px; height: 80px; font-size: 36px; font-family: var(--font-hand); line-height: 80px;" id="ui-avatar-profil">?</div>
+                    <h2 class="card-title" id="ui-name-profil" style="font-size: 24px; margin-bottom: 4px;">---</h2>
+                    <div id="ui-verif-badge-profil" class="badge pending" style="margin-bottom: 8px;">
+                        <i data-lucide="award" size="12"></i> Afiliator Pro
+                    </div>
+                </div>
+
+                <div class="sketch-card">
+                    <div class="card-header">
+                        <i data-lucide="info" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Cara Kerja Node</h3>
+                    </div>
+                    <ol class="instruction-list" style="margin-left: 20px; font-size: 13px;">
+                        <li>Sebar link afiliasi lu ke mana aja.</li>
+                        <li>Pastikan bawahan lu daftar dan aktifin node-nya.</li>
+                        <li>Saldo lu otomatis nambah tiap ada yang valid!</li>
+                        <li>Tarik cuan ke E-Wallet kalau saldo udah cukup.</li>
+                    </ol>
+                </div>
+
+                <div class="sketch-card" style="background: var(--bg-paper-darker); border-style: dashed;">
+                    <div class="card-header">
+                        <i data-lucide="shield-alert" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Peraturan & Kebijakan</h3>
+                    </div>
+                    <ul style="padding-left: 20px; font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
+                        <li><b>Dilarang keras</b> nuyul pake bot atau VPN! Ketahuan = Banned.</li>
+                        <li>Satu HP / Perangkat = Satu Node.</li>
+                        <li>Minimal penarikan sesuai dengan nominal yang ada di menu Tarik.</li>
+                        <li>Admin berhak membatalkan penarikan jika terdeteksi kecurangan/manipulasi data.</li>
+                    </ul>
+                </div>
+
+                <div class="sketch-card" style="background: var(--marker-green); transform: rotate(1deg);">
+                    <div class="card-header">
+                        <i data-lucide="message-circle" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Pusat Bantuan</h3>
+                    </div>
+                    <p style="font-size: 12px; margin-bottom: 12px;">Ada kendala? Atau mau lapor bug? Langsung aja chat Admin (fast respon kalau admin lagi ga tidur).</p>
+                    <a href="https://wa.me/6285719059542" target="_blank" style="text-decoration: none;">
+                        <button class="btn-primary" style="background: var(--ink); color: white; border-radius: var(--sketch-radius-alt);">
+                            <i data-lucide="phone" size="16"></i> Chat WA: +62 857-1905-9542
+                        </button>
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchPage('dashboard', this)">
+                <i data-lucide="layout-dashboard" size="20" stroke-width="2.5"></i>
+                <span>Dasbor</span>
+            </div>
+            <div class="nav-item" onclick="switchPage('withdraw', this)">
+                <i data-lucide="wallet" size="20" stroke-width="2.5"></i>
+                <span>Tarik</span>
+            </div>
+            <div class="nav-item" onclick="switchPage('tugas', this)">
+                <i data-lucide="clipboard-check" size="20" stroke-width="2.5"></i>
+                <span>Tugas</span>
+            </div>
+            <div class="nav-item" onclick="switchPage('profil', this)">
+                <i data-lucide="user" size="20" stroke-width="2.5"></i>
+                <span>Profil</span>
+            </div>
+        </nav>
+    </div>
+
+    <div id="receipt-modal" class="modal-overlay" onclick="closeReceipt()">
+        <div class="sketch-card receipt-paper" onclick="event.stopPropagation()">
+            <div class="card-header" style="justify-content: center; border-bottom: 2px dashed var(--ink); padding-bottom: 10px; margin-bottom: 15px;">
+                <i data-lucide="receipt" size="24"></i> 
+                <h3 class="card-title">Resi Penarikan</h3>
+            </div>
+            <div id="receipt-content" style="font-family: var(--font-hand); font-size: 14px; line-height: 1.8;">
+                </div>
+            <button class="btn-primary" onclick="closeReceipt()" style="margin-top: 20px; background: var(--ink); color: white;">Tutup Resi</button>
+        </div>
+    </div>
+
+    <div id="wallet-sheet-overlay" class="sheet-overlay" onclick="closeWalletSheet()">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-header">
+                <h3 class="card-title">Pilih E-Wallet</h3>
+                <div style="cursor: pointer; padding: 4px;" onclick="closeWalletSheet()"><i data-lucide="x" size="20" stroke-width="3"></i></div>
+            </div>
+            <div class="sheet-content">
+                <div class="sheet-item" onclick="selectWallet('GoPay')">GoPay <i data-lucide="arrow-right" size="16"></i></div>
+                <div class="sheet-item" onclick="selectWallet('DANA')">DANA <i data-lucide="arrow-right" size="16"></i></div>
+                <div class="sheet-item" onclick="selectWallet('ShopeePay')">ShopeePay <i data-lucide="arrow-right" size="16"></i></div>
+                <div class="sheet-item" onclick="selectWallet('Link Aja!')">Link Aja! <i data-lucide="arrow-right" size="16"></i></div>
+                <div class="sheet-item" onclick="selectWallet('OVO')">OVO <i data-lucide="arrow-right" size="16"></i></div>
+                <div class="sheet-item" onclick="selectWallet('iSaku')">iSaku <i data-lucide="arrow-right" size="16"></i></div>
+                <div class="sheet-item" onclick="selectWallet('Sakuku')">Sakuku <i data-lucide="arrow-right" size="16"></i></div>
+                <div class="sheet-item" onclick="selectWallet('AstraPay')">AstraPay <i data-lucide="arrow-right" size="16"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const DB = window.supabase.createClient(
+            'https://fzwcwgjugldqyhhngkif.supabase.co',
+            'sb_publishable_vMraMm5IDQr7tpcMDcc_-g_Ft7zcSCh'
+        );
+
+        const PROMO_URL = 'https://miner.mineverse-chain.my.id/';
+        const COMISSION_RATE = 6000;
+
+        let STATE = { nodeId: null, refCode: null, isVerified: false, balance: 0, wdMethod: null, wdAmount: 0 };
+        let windowHistory = []; 
+
+        let toastTimeout;
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            let iconName = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-octagon' : 'info';
+            toast.innerHTML = `<i data-lucide="${iconName}"></i><span id="toast-msg">${msg}</span>`;
+            toast.className = `toast ${type}`;
+            lucide.createIcons({ root: toast });
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function toggleLoader(show) {
+            const loader = document.getElementById('loader-overlay');
+            if (show) loader.classList.add('active');
+            else loader.classList.remove('active');
+        }
+
+        function switchForm(mode) {
+            const log = document.getElementById('form-login');
+            const reg = document.getElementById('form-register');
+            if (mode === 'register') {
+                log.classList.add('hidden');
+                setTimeout(() => { log.style.display = 'none'; reg.style.display = 'flex'; setTimeout(() => reg.classList.remove('hidden'), 50); }, 300);
+            } else {
+                reg.classList.add('hidden');
+                setTimeout(() => { reg.style.display = 'none'; log.style.display = 'flex'; setTimeout(() => log.classList.remove('hidden'), 50); }, 300);
+            }
+        }
+
+        function switchPage(pageId, navElement) {
+            // TUTUP OTOMATIS: Semua overlay ditutup ketika klik navigasi lain
+            closeWalletSheet();
+            closeReceipt();
+
+            document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            navElement.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function copyReferralLink() {
+            if (!STATE.refCode) return showToast('Kode belum siap bro', 'error');
+            const text = `${PROMO_URL}?ref=${STATE.refCode}`;
+            navigator.clipboard.writeText(text).then(() => showToast('Disalin ke kertas!', 'success'));
+        }
+
+        async function shareLink() {
+            if (!STATE.refCode) return;
+            const textToShare = `🔥 Pengen HP keduamu jadi mesin pencetak uang?\n\nAyo gabung ke CreatorLife! Platform cloud mining Bitcoin dengan biaya super rendah, cocok banget buat di-run di device keduamu.\n\n✅ Penghasilan nyata (Real Income)\n✅ Gampang banget daftarnya\n✅ Anti ribet, tinggal pantau\n\nTunggu apa lagi? Ayo gabung ke CreatorLife sekarang juga dan mulai kumpulkan cuannya!\n\n🔗 Daftar di sini:\n${PROMO_URL}?ref=${STATE.refCode}\n\n(Jangan lupa pake kode referral gw: ${STATE.refCode} biar dapat bonus bareng!)`;
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'CreatorLife Camp',
+                        text: textToShare,
+                    });
+                    showToast('Mantap, berhasil disebar!', 'success');
+                } catch (err) {
+                    console.log('Batal sebar atau error', err);
+                }
+            } else {
+                copyReferralLink();
+                showToast('Browser lu ga support share otomatis, link gw copy aja ya!', 'info');
+            }
+        }
+        
+        function copyPromoText() {
+            if (!STATE.refCode) return showToast('Tunggu bentar, ID lu belum beres diload.', 'error');
+            const promoText = `🔥 Pengen HP keduamu jadi mesin pencetak uang?\n\nAyo gabung ke CreatorLife! Platform cloud mining Bitcoin dengan biaya super rendah, cocok banget buat di-run di device keduamu.\n\n✅ Penghasilan nyata (Real Income)\n✅ Gampang banget daftarnya\n✅ Anti ribet, tinggal pantau\n\nTunggu apa lagi? Ayo gabung ke CreatorLife sekarang juga dan mulai kumpulkan cuannya!\n\n🔗 Daftar di sini:\n${PROMO_URL}?ref=${STATE.refCode}\n\n(Jangan lupa pake kode referral gw: ${STATE.refCode} biar dapat bonus bareng!)`;
+            navigator.clipboard.writeText(promoText).then(() => showToast('Teks promosi sukses dicopy! Gas sebar!', 'success'));
+        }
+
+        function openWalletSheet() {
+            const overlay = document.getElementById('wallet-sheet-overlay');
+            if (!overlay.classList.contains('show')) {
+                overlay.classList.add('show');
+            }
+        }
+
+        function closeWalletSheet() {
+            document.getElementById('wallet-sheet-overlay').classList.remove('show');
+        }
+
+        function selectWallet(method) {
+            STATE.wdMethod = method;
+            document.getElementById('selected-wallet-text').innerText = method;
+            closeWalletSheet();
+        }
+
+        function selectAmount(el, amount) {
+            document.querySelectorAll('#amount-selector .chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            STATE.wdAmount = amount;
+        }
+
+        async function processRegister() {
+            const node = document.getElementById('reg-node').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
+            const pass2 = document.getElementById('reg-pass2').value.trim();
+
+            if (!node || !pass || !pass2) return showToast('Isi semua kotak anjay!', 'error');
+            if (pass !== pass2) return showToast('Passwordnya beda tuh.', 'error');
+
+            toggleLoader(true);
+            const { data: checkData } = await DB.from('users').select('node_id').eq('node_id', node).single();
+            if (checkData) {
+                toggleLoader(false);
+                return showToast('ID udah ada yg pake.', 'error');
+            }
+
+            const newRefCode = "CAMP-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+            const { error } = await DB.from('users').insert([{
+                node_id: node, password: pass, ref_code: newRefCode, referred_by: null, is_verified: false, saldo: 0, reward_day: 1
+            }]);
+
+            toggleLoader(false);
+            if (error) return showToast('Gagal nulis ke database.', 'error');
+
+            showToast('Mantap! Langsung login yak.', 'success');
+            document.getElementById('log-node').value = node;
+            document.getElementById('log-pass').value = pass;
+            switchForm('login');
+        }
+
+        async function processLogin() {
+            const node = document.getElementById('log-node').value.trim();
+            const pass = document.getElementById('log-pass').value.trim();
+            if (!node || !pass) return showToast('Jangan ada yg kosong.', 'error');
+
+            toggleLoader(true);
+            const { data, error } = await DB.from('users').select('*').eq('node_id', node).eq('password', pass).single();
+
+            if (error || !data) {
+                toggleLoader(false);
+                return showToast('ID atau Password salah bos.', 'error');
+            }
+
+            localStorage.setItem('camp_session', node);
+            await bootDashboard(data);
+            toggleLoader(false);
+        }
+
+        function processLogout() {
+            localStorage.removeItem('camp_session');
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('auth-screen').style.display = 'flex';
+            STATE = { nodeId: null, refCode: null, isVerified: false, balance: 0, wdMethod: null, wdAmount: 0 };
+            showToast('Dadah, balik lagi ya!', 'info');
+        }
+
+        async function bootDashboard(userData) {
+            STATE.nodeId = userData.node_id;
+            STATE.refCode = userData.ref_code || '';
+            STATE.isVerified = userData.is_verified;
+
+            // Update UI Profil & Tugas
+            const avatarChar = STATE.nodeId.charAt(0).toUpperCase();
+            document.getElementById('ui-avatar-tugas').innerText = avatarChar;
+            document.getElementById('ui-avatar-profil').innerText = avatarChar;
+            
+            document.getElementById('ui-name-tugas').innerText = STATE.nodeId;
+            document.getElementById('ui-name-profil').innerText = STATE.nodeId;
+            
+            document.getElementById('ui-refcode-tugas').innerText = STATE.refCode || 'PENDING';
+
+            const promoPreview = document.getElementById('promo-text-preview');
+            if (promoPreview) {
+                promoPreview.innerHTML = `🔥 Pengen HP keduamu jadi mesin pencetak uang?<br><br>
+Ayo gabung ke CreatorLife! Platform cloud mining Bitcoin dengan biaya super rendah, cocok banget buat di-run di device keduamu.<br><br>
+✅ Penghasilan nyata (Real Income)<br>
+✅ Gampang banget daftarnya<br>
+✅ Anti ribet, tinggal pantau<br><br>
+Tunggu apa lagi? Ayo gabung ke CreatorLife sekarang juga dan mulai kumpulkan cuannya!<br><br>
+🔗 Daftar di sini:<br>
+<a href="${PROMO_URL}?ref=${STATE.refCode}" target="_blank" style="color: var(--marker-blue-strong); font-weight: bold; word-break: break-all;">${PROMO_URL}?ref=${STATE.refCode}</a><br><br>
+(Jangan lupa pake kode referral gw: ${STATE.refCode} biar dapat bonus bareng!)`;
+            }
+
+            // Update Badge Verifikasi di Tugas & Profil
+            const badgeTugas = document.getElementById('ui-verif-badge-tugas');
+            const badgeProfil = document.getElementById('ui-verif-badge-profil');
+            
+            if (STATE.isVerified) {
+                badgeTugas.className = 'badge verified';
+                badgeTugas.innerHTML = `<i data-lucide="shield-check" size="12"></i> Node Valid`;
+                badgeProfil.className = 'badge verified';
+                badgeProfil.innerHTML = `<i data-lucide="shield-check" size="12"></i> Node Valid`;
+            } else {
+                badgeTugas.className = 'badge pending';
+                badgeTugas.innerHTML = `<i data-lucide="award" size="12"></i> Afiliator Pro`;
+                badgeProfil.className = 'badge pending';
+                badgeProfil.innerHTML = `<i data-lucide="award" size="12"></i> Afiliator Pro`;
+            }
+
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+
+            await Promise.all([ fetchDownlines(), fetchHistory() ]);
+            lucide.createIcons();
+        }
+
+        async function fetchDownlines() {
+            if (!STATE.refCode) return;
+            const { data, error } = await DB.from('users').select('node_id, is_verified').eq('referred_by', STATE.refCode);
+            if (error || !data) return;
+
+            const total = data.length;
+            const active = data.filter(d => d.is_verified).length;
+            const pending = total - active;
+            
+            document.getElementById('stat-all').innerText = total;
+            document.getElementById('stat-active').innerText = active;
+            document.getElementById('stat-pending').innerText = pending;
+
+            document.getElementById('tugas-stat-all').innerText = total;
+            document.getElementById('tugas-stat-active').innerText = active;
+            document.getElementById('tugas-stat-pending').innerText = pending;
+
+            const grossBalance = active * COMISSION_RATE;
+            const { data: wdData } = await DB.from('camp_withdrawals').select('amount').eq('node_id', STATE.nodeId).neq('status', 'rejected');
+            const totalWd = (wdData || []).reduce((sum, item) => sum + parseFloat(item.amount), 0);
+            
+            STATE.balance = grossBalance - totalWd;
+            const balanceText = `Rp ${STATE.balance.toLocaleString('id-ID')}`;
+            document.getElementById('ui-balance').innerText = balanceText;
+            document.getElementById('ui-balance-wd').innerText = balanceText;
+
+            const listEl = document.getElementById('downline-list');
+            if (total === 0) return;
+
+            listEl.innerHTML = '';
+            const sorted = [...data].sort((a, b) => (b.is_verified ? 1 : 0) - (a.is_verified ? 1 : 0));
+            
+            sorted.forEach(dl => {
+                const init = dl.node_id.charAt(0).toUpperCase();
+                const isV = dl.is_verified;
+                const statusTxt = isV ? 'Tervalidasi' : 'Nunggu Bayar';
+                const earnTxt = isV ? '+6k' : '0';
+                const bgIcon = isV ? 'var(--marker-green)' : 'var(--bg-paper)';
+                
+                listEl.innerHTML += `
+                    <div class="list-item">
+                        <div class="list-left" style="display: flex; gap: 10px; align-items: center;">
+                            <div class="list-icon" style="background: ${bgIcon}">${init}</div>
+                            <div>
+                                <div class="item-title">${dl.node_id}</div>
+                                <div class="item-sub">${statusTxt}</div>
+                            </div>
+                        </div>
+                        <div class="item-right">
+                            <div class="item-amount">Rp ${earnTxt}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        async function submitWithdrawal() {
+            const name = document.getElementById('wd-name').value.trim();
+            const num = document.getElementById('wd-number').value.trim();
+
+            if (!STATE.wdMethod) return showToast('Pilih dulu dompetnya', 'error');
+            if (!name || !num) return showToast('Nama & Nomor isi dong', 'error');
+            if (!STATE.wdAmount) return showToast('Berapa duit?', 'error');
+            if (STATE.wdAmount > STATE.balance) return showToast('Duit lu ga cukup bro', 'error');
+
+            let finalAmount = STATE.wdAmount;
+            let adminFee = 0;
+
+            if (STATE.wdAmount >= 6000 && STATE.wdAmount <= 10000) {
+                if (STATE.wdMethod !== 'GoPay') {
+                    return showToast('Nominal 6k-10k cuma bisa pake GoPay bang!', 'error');
+                }
+            }
+
+            if (STATE.wdAmount >= 20000 && STATE.wdAmount <= 200000) {
+                adminFee = 2000;
+                finalAmount = STATE.wdAmount - adminFee;
+            }
+
+            toggleLoader(true);
+            const trxId = 'AFF-' + Math.floor(Math.random() * 90000 + 10000);
+
+            const { error } = await DB.from('camp_withdrawals').insert([{
+                trx_id: trxId, node_id: STATE.nodeId, amount: finalAmount, method: STATE.wdMethod, target: num, name_acc: name, status: 'pending', original_amount: STATE.wdAmount, fee: adminFee
+            }]);
+
+            toggleLoader(false);
+            if (error) return showToast('Gagal ngirim form.', 'error');
+
+            showToast('Form terkirim! Admin otw ngecek.', 'success');
+            
+            showReceiptFromData({
+                trx_id: trxId,
+                method: STATE.wdMethod,
+                amount: finalAmount,
+                original_amount: STATE.wdAmount,
+                fee: adminFee,
+                target: num,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            });
+            
+            document.getElementById('wd-name').value = '';
+            document.getElementById('wd-number').value = '';
+            document.getElementById('selected-wallet-text').innerText = 'Pilih Dompet E-Wallet...';
+            document.querySelectorAll('#amount-selector .chip').forEach(c => c.classList.remove('active'));
+            STATE.wdMethod = null;
+            STATE.wdAmount = 0;
+
+            await Promise.all([ fetchDownlines(), fetchHistory() ]);
+        }
+
+        async function fetchHistory() {
+            const listEl = document.getElementById('history-list');
+            const { data, error } = await DB.from('camp_withdrawals').select('*').eq('node_id', STATE.nodeId).order('created_at', { ascending: false }).limit(10);
+
+            if (error || !data || data.length === 0) return;
+
+            windowHistory = data; 
+            listEl.innerHTML = '';
+            
+            data.forEach(w => {
+                const date = new Date(w.created_at);
+                const dateStr = `${date.getDate()} ${date.toLocaleString('id-ID', {month:'short'})}`;
+                
+                let bgIcon, iconName, stTxt;
+                if (w.status === 'success') { bgIcon = 'var(--marker-green)'; iconName = 'check'; stTxt = 'Selesai'; }
+                else if (w.status === 'rejected') { bgIcon = 'var(--marker-red)'; iconName = 'x'; stTxt = 'Ditolak'; }
+                else { bgIcon = 'var(--marker-yellow)'; iconName = 'clock'; stTxt = 'Diproses'; }
+
+                listEl.innerHTML += `
+                    <div class="list-item" onclick="showReceipt('${w.trx_id}')">
+                        <div class="list-left" style="display: flex; gap: 10px; align-items: center;">
+                            <div class="list-icon" style="background: ${bgIcon}"><i data-lucide="${iconName}" size="16" stroke-width="3"></i></div>
+                            <div>
+                                <div class="item-title">Tarik ${w.method}</div>
+                                <div class="item-sub">${dateStr}</div>
+                            </div>
+                        </div>
+                        <div class="item-right" style="text-align:right;">
+                            <div class="item-amount">${parseFloat(w.amount).toLocaleString('id-ID')}</div>
+                            <div class="item-sub">${stTxt}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function showReceipt(trxId) {
+            const data = windowHistory.find(d => d.trx_id === trxId);
+            if (data) showReceiptFromData(data);
+        }
+
+        function showReceiptFromData(data) {
+            const modal = document.getElementById('receipt-modal');
+            const content = document.getElementById('receipt-content');
+            
+            const dateObj = new Date(data.created_at);
+            const dateStr = dateObj.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            let displayAmount = parseFloat(data.amount);
+            let displayFee = 0;
+            
+            if (data.fee !== undefined && data.original_amount !== undefined) {
+                displayAmount = data.original_amount;
+                displayFee = data.fee;
+            } else {
+                if (displayAmount >= 18000 && displayAmount % 10000 === 8000) { 
+                    displayAmount += 2000; 
+                    displayFee = 2000; 
+                }
+            }
+
+            let maskedTarget = '***';
+            if (data.target) {
+                const numStr = String(data.target);
+                if (numStr.length > 6) {
+                    maskedTarget = numStr.slice(0, 3) + '*'.repeat(numStr.length - 6) + numStr.slice(-3);
+                } else {
+                    maskedTarget = numStr.slice(0, 1) + '***';
+                }
+            }
+
+            let statusColor = data.status === 'success' ? 'var(--marker-green-strong)' : data.status === 'rejected' ? 'var(--marker-red-strong)' : 'var(--marker-yellow-strong)';
+            
+            content.innerHTML = `
+                <div class="receipt-row"><span>No. Ref</span> <b>${data.trx_id}</b></div>
+                <div class="receipt-row"><span>Waktu</span> <b>${dateStr}</b></div>
+                <div class="receipt-row"><span>Tujuan</span> <b>${data.method}</b></div>
+                <div class="receipt-row"><span>No. Akun</span> <b>${maskedTarget}</b></div>
+                
+                <div class="receipt-row" style="margin-top: 15px;"><span>Nominal Tarik</span> <b>Rp ${displayAmount.toLocaleString('id-ID')}</b></div>
+                <div class="receipt-row" style="color: var(--marker-red-strong);"><span>Biaya Admin</span> <b>- Rp ${displayFee.toLocaleString('id-ID')}</b></div>
+                
+                <div class="receipt-row receipt-total"><span>Total Diterima</span> <b>Rp ${(displayAmount - displayFee).toLocaleString('id-ID')}</b></div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <span class="badge" style="background: ${statusColor}; font-size: 13px; border-width: 2px; padding: 6px 16px;">
+                        STATUS: ${data.status.toUpperCase()}
+                    </span>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+            lucide.createIcons();
+        }
+
+        function closeReceipt() {
+            document.getElementById('receipt-modal').classList.remove('show');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const session = localStorage.getItem('camp_session');
+            if (session) {
+                toggleLoader(true);
+                const { data } = await DB.from('users').select('*').eq('node_id', session).single();
+                if (data) await bootDashboard(data);
+                else localStorage.removeItem('camp_session');
+                toggleLoader(false);
+            }
+        });
+    </script>
+</body>
+</html>
