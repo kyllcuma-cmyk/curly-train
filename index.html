@@ -85,7 +85,7 @@
             animation: spin 1s infinite cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        /* --- Toast Notification --- */
+        /* --- Toast Notification (General) --- */
         .toast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: var(--bg-paper); border: var(--sketch-border); 
@@ -98,6 +98,20 @@
         .toast.show { top: 24px; }
         .toast.success { background: var(--marker-green); }
         .toast.error { background: var(--marker-red); }
+
+        /* --- Greeting Notification Toast (Dynamic) --- */
+        .toast-greeting {
+            position: fixed; top: -150px; left: 50%; transform: translateX(-50%) rotate(-1deg);
+            width: 90%; max-width: 400px;
+            background: var(--marker-yellow); border: var(--sketch-border); 
+            border-radius: var(--sketch-radius-alt);
+            padding: 16px; display: flex; flex-direction: column; gap: 8px;
+            z-index: 99999; box-shadow: 6px 6px 0px var(--ink);
+            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none;
+        }
+        .toast-greeting.show { top: 24px; }
+        .toast-greeting-header { display: flex; align-items: center; gap: 8px; font-family: var(--font-hand); font-size: 18px; font-weight: 700; }
+        .toast-greeting-body { font-size: 12px; font-weight: 500; font-style: italic; color: var(--ink-light); }
 
         /* --- AUTH SCREEN --- */
         #auth-screen { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
@@ -127,7 +141,7 @@
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
             background: white; border-top: var(--sketch-border); 
-            z-index: 9999; /* HIGHEST Z-INDEX, di atas Bottom Sheet */
+            z-index: 9999; 
             display: flex; justify-content: space-around; align-items: center;
             padding-bottom: env(safe-area-inset-bottom);
         }
@@ -158,6 +172,14 @@
         .stat-val { font-family: var(--font-hand); font-size: 22px; font-weight: 700; line-height: 1; }
         .stat-lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; }
 
+        /* Progress Bar (Rank) */
+        .progress-container { height: 24px; border: 2px dashed var(--ink); border-radius: 12px; padding: 2px; position: relative; overflow: hidden; background: white; margin-bottom: 8px; }
+        .progress-bar { height: 100%; background: var(--marker-green); border-radius: 8px; width: 0%; transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid var(--ink); position: relative; }
+        .progress-bar::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.2) 75%, transparent 75%, transparent); background-size: 15px 15px; }
+
+        .rank-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dotted var(--ink-light); font-size: 12px; font-weight: 600; }
+        .rank-list-item:last-child { border-bottom: none; }
+
         .list-container { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-paper-darker); border: 2px dashed var(--ink); border-radius: var(--sketch-radius); cursor: pointer; transition: all 0.2s; }
         .list-item:hover { background: var(--marker-blue); border-style: solid; transform: translateX(2px); }
@@ -186,9 +208,30 @@
         .todo-check.done { background: var(--marker-green); }
         .ref-box { background: white; border: var(--sketch-border); border-radius: var(--sketch-radius); padding: 12px; text-align: center; box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1); }
         .ref-code { font-family: var(--font-hand); font-size: 24px; font-weight: 700; color: var(--marker-blue-strong); }
+        
         .btn-action { flex: 1; padding: 10px; background: white; border: var(--sketch-border); border-radius: var(--sketch-radius-alt); font-weight: 600; box-shadow: 2px 2px 0 var(--ink); display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;}
         .btn-action:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--ink); }
         .btn-action:active { transform: translate(2px,2px); box-shadow: 0 0 0; }
+        
+        /* --- Premium Sketch Asset Buttons --- */
+        .btn-asset-sketch {
+            background: white; border: var(--sketch-border); 
+            border-radius: var(--sketch-radius-alt); padding: 12px; 
+            font-family: var(--font-hand); font-size: 15px; font-weight: 700;
+            box-shadow: 3px 3px 0 var(--ink); cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-asset-sketch:hover {
+            transform: translateY(-3px) rotate(1deg);
+            box-shadow: 5px 5px 0 var(--ink);
+            background: var(--marker-yellow);
+        }
+        .btn-asset-sketch:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 var(--ink);
+        }
+
         .instruction-list { margin-left: 24px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
         .instruction-list li { padding-left: 4px; }
 
@@ -200,19 +243,43 @@
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         
-        /* Modal Resi */
+        /* Modal Style */
         .modal-overlay { z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
+        
         .receipt-paper { width: 100%; max-width: 320px; background: #fffdf5; border: 2px dashed var(--ink); padding: 20px; transform: scale(0.9) rotate(-1deg); box-shadow: 6px 6px 0px var(--ink); border-radius: 4px; position: relative; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .modal-overlay.show .receipt-paper { transform: scale(1) rotate(-1deg); }
+        
+        /* Asset Popup Card Specific Styles */
+        .asset-popup-card { width: 100%; max-width: 400px; max-height: 95vh; display: flex; flex-direction: column; background: #fffdf5; border: var(--sketch-border); border-radius: var(--sketch-radius); padding: 20px; box-shadow: 6px 6px 0px var(--ink); transform: scale(0.9) rotate(1deg); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-overlay.show .asset-popup-card { transform: scale(1) rotate(1deg); }
+
+        .asset-img-container {
+            background: white; border: var(--sketch-border); border-radius: var(--sketch-radius-alt); 
+            overflow: hidden; padding: 8px; margin-bottom: 16px; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05);
+            position: relative; display: flex; justify-content: center; align-items: center;
+            min-height: 200px;
+        }
+        
+        #asset-popup-img { 
+            width: 100%; max-height: 65vh; 
+            object-fit: contain; display: none; margin: 0 auto; border-radius: 4px; 
+        }
+
+        .img-loader {
+            position: absolute;
+            width: 36px; height: 36px;
+            border: 3px solid var(--marker-blue); border-top-color: var(--ink); border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
         .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dotted var(--ink-light); padding-bottom: 4px;}
         .receipt-total { font-size: 18px; font-weight: bold; border-top: 2px dashed var(--ink); padding-top: 8px; margin-top: 8px; border-bottom: none;}
 
-        /* --- BOTTOM SHEET E-WALLET (FIXED) --- */
+        /* --- BOTTOM SHEET E-WALLET --- */
         .sheet-overlay { 
-            z-index: 9998; /* Di bawah Z-index Nav (9999) jadi laci keluar dari belakang nav */
+            z-index: 9998; 
             display: flex; align-items: flex-end; justify-content: center; 
-            /* Dibuat kosong (gak ada padding-bottom) biar lacinya mentok ke bawah layar */
         }
         .sheet-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
 
@@ -220,7 +287,6 @@
             width: 100%; max-width: 480px; background: #fffdf5;
             border: 2px solid var(--ink); border-bottom: none;
             border-radius: 24px 24px 0 0; 
-            /* Padding bawah di gedein (85px) biar E-Wallet gak ketutupan navigasi */
             padding: 20px 24px calc(85px + env(safe-area-inset-bottom, 0px));
             position: relative; 
             transform: translateY(100%); 
@@ -240,9 +306,27 @@
         }
         .sheet-item:hover { background: var(--marker-yellow); border-color: var(--ink); transform: translate(-2px, -2px) rotate(-0.5deg); box-shadow: 4px 4px 0 var(--ink); }
         .sheet-item:active { transform: translate(2px,2px); box-shadow: 0 0 0; }
+        
+        .post-img { width: 100%; border: var(--sketch-border); border-radius: var(--sketch-radius-alt); box-shadow: 3px 3px 0 var(--ink); margin-bottom: 12px; object-fit: contain; }
+        
+        /* --- FITUR TAMBAHAN (CHECK-IN & AVATAR) --- */
+        .checkin-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 12px; }
+        .checkin-box { aspect-ratio: 1; border: 2px dashed var(--ink); border-radius: 8px; display: flex; justify-content: center; align-items: center; font-family: var(--font-hand); font-size: 16px; font-weight: bold; background: white; position: relative; transition: all 0.2s; }
+        .checkin-box.done { border-style: solid; background: var(--marker-green); color: transparent; }
+        .checkin-box.done::after { content: ''; position: absolute; inset: 0; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%231e1e24" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>') center/60% no-repeat; opacity: 0.8; }
+        
+        .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
+        .avatar-box { aspect-ratio: 1; border: var(--sketch-border); border-radius: var(--sketch-radius-alt); background: white; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; box-shadow: 2px 2px 0 var(--ink); font-family: var(--font-hand); font-size: 20px; font-weight: bold; }
+        .avatar-box:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--ink); background: var(--marker-yellow); }
+        .avatar-box.active { background: var(--marker-blue); border-width: 3px; transform: translateY(2px); box-shadow: 0 0 0; }
     </style>
 </head>
 <body>
+
+    <div id="greeting-toast" class="toast-greeting">
+        <div class="toast-greeting-header" id="greet-notif-title"></div>
+        <div class="toast-greeting-body" id="greet-notif-quote"></div>
+    </div>
 
     <div id="loader-overlay">
         <div class="spinner"></div>
@@ -333,6 +417,19 @@
                     </div>
                 </div>
 
+                <div class="sketch-card" style="background: var(--bg-paper); border: 2px dashed var(--ink);">
+                    <div class="card-header">
+                        <i data-lucide="calendar-check" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Absen Harian (Check-in)</h3>
+                    </div>
+                    <p style="font-size: 11px; margin-bottom: 12px;">Biar nambah-nambah receh (Rp 50-80), absen dulu bosku. Tiap hari gaskeun!</p>
+                    <div class="checkin-grid" id="ui-checkin-grid">
+                        </div>
+                    <button id="btn-checkin" class="btn-primary" style="margin-top: 8px; background: var(--marker-green); color: var(--ink);" onclick="doCheckin()">
+                        Absen Sekarang <i data-lucide="check-square" size="18"></i>
+                    </button>
+                </div>
+
                 <div class="sketch-card" style="background: var(--marker-yellow); transform: rotate(-1deg); border-color: var(--ink);">
                     <div class="card-header" style="margin-bottom: 8px;">
                         <i data-lucide="scroll-text" size="18" stroke-width="2.5"></i>
@@ -346,6 +443,49 @@
                     <button class="btn-primary" style="background: var(--ink); color: white; padding: 12px; font-size: 14px; width: 100%; display: flex; justify-content: center; gap: 8px;" onclick="document.querySelectorAll('.bottom-nav .nav-item')[2].click()">
                         Gas ke Tab Tugas <i data-lucide="arrow-right" size="16"></i>
                     </button>
+                </div>
+
+                <div class="sketch-card" style="transform: rotate(0.5deg);">
+                    <div class="card-header">
+                        <i data-lucide="medal" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Level Afiliator Lu</h3>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
+                        <div>
+                            <div style="font-size: 11px; font-weight: 600;">Rank Saat Ini:</div>
+                            <div id="ui-current-rank" style="font-family: var(--font-hand); font-size: 24px; font-weight: 700; color: var(--ink);">Pemula</div>
+                        </div>
+                        <div style="font-size: 11px; text-align: right; color: var(--ink-light);">
+                            Target: <b id="ui-next-rank" style="color: var(--ink);">Aktif</b>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div id="ui-rank-progress" class="progress-bar" style="width: 0%;"></div>
+                    </div>
+                    <div id="ui-rank-text" style="font-size: 11px; text-align: center; margin-top: 8px; margin-bottom: 16px; font-weight: 500;">
+                        Lagi ngitung bawahan lu...
+                    </div>
+
+                    <div style="background: var(--bg-paper-darker); padding: 12px; border-radius: var(--sketch-radius); border: 1px dashed var(--ink);">
+                        <div style="font-weight: 700; font-size: 12px; margin-bottom: 8px; font-family: var(--font-hand);">Daftar Rank (Tier List):</div>
+                        <div class="rank-list-item">
+                            <span style="display:flex; gap:6px; align-items:center;"><i data-lucide="target" size="14"></i> Pemula</span> <span style="font-family: var(--font-hand); font-size: 14px;">0 - 3 Node (Rp 2.500)</span>
+                        </div>
+                        <div class="rank-list-item">
+                            <span style="display:flex; gap:6px; align-items:center;"><i data-lucide="flame" size="14"></i> Rank Aktif</span> <span style="font-family: var(--font-hand); font-size: 14px;">4 - 7 Node (Rp 3.375)</span>
+                        </div>
+                        <div class="rank-list-item">
+                            <span style="display:flex; gap:6px; align-items:center; color: var(--marker-blue-strong);"><i data-lucide="zap" size="14"></i> Pro</span> <span style="font-family: var(--font-hand); font-size: 14px;">8 - 11 Node (Rp 4.250)</span>
+                        </div>
+                        <div class="rank-list-item">
+                            <span style="display:flex; gap:6px; align-items:center; color: var(--marker-green-strong);"><i data-lucide="gem" size="14"></i> Elite</span> <span style="font-family: var(--font-hand); font-size: 14px;">12 - 14 Node (Rp 5.125)</span>
+                        </div>
+                        <div class="rank-list-item">
+                            <span style="display:flex; gap:6px; align-items:center; color: var(--marker-yellow-strong);"><i data-lucide="crown" size="14"></i> Master</span> <span style="font-family: var(--font-hand); font-size: 14px;">15+ Node (Rp 6.000)</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="sketch-card">
@@ -431,7 +571,7 @@
                         <div class="list-icon" style="background: white; width: 48px; height: 48px; font-size: 24px;" id="ui-avatar-tugas">M</div>
                         <div>
                             <div class="card-title" id="ui-name-tugas" style="font-size: 22px;">---</div>
-                            <div class="badge pending" id="ui-verif-badge-tugas"><i data-lucide="award" size="12"></i> Afiliator Pro</div>
+                            <div class="badge pending" id="ui-verif-badge-tugas">Menghitung Rank...</div>
                         </div>
                     </div>
                 </div>
@@ -523,6 +663,48 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="sketch-card" style="transform: rotate(0.5deg); background-color: var(--marker-green); border-color: var(--ink);">
+                    <div class="card-header">
+                        <i data-lucide="download" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Download Aset Konten</h3>
+                    </div>
+                    <p style="font-size: 12px; margin-bottom: 16px;">Ambil gambar di bawah buat bikin konten promo versi lu sendiri. Gas!</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <button onclick="openAssetModal('Aset Konten 1', 'https://i.ibb.co.com/Dfn4dXM4/Screenshot-20260612-112054.jpg')" class="btn-asset-sketch"><i data-lucide="image" size="15"></i> Aset 1</button>
+                        <button onclick="openAssetModal('Aset Konten 2', 'https://i.ibb.co.com/nxzHq2Z/Screenshot-20260612-112108.jpg')" class="btn-asset-sketch"><i data-lucide="image" size="15"></i> Aset 2</button>
+                        <button onclick="openAssetModal('Aset Konten 3', 'https://i.ibb.co.com/prhsb4hX/Screenshot-20260612-191417.jpg')" class="btn-asset-sketch"><i data-lucide="image" size="15"></i> Aset 3</button>
+                        <button onclick="openAssetModal('Aset Konten 4', 'https://i.ibb.co.com/Kx5002fW/Screenshot-20260612-191422.jpg')" class="btn-asset-sketch"><i data-lucide="image" size="15"></i> Aset 4</button>
+                        <button onclick="openAssetModal('Aset Konten 5', 'https://i.ibb.co.com/mVQWpvk7/Screenshot-20260612-191429.jpg')" class="btn-asset-sketch" style="grid-column: span 2;"><i data-lucide="image" size="15"></i> Aset 5</button>
+                    </div>
+                </div>
+
+                <div class="sketch-card" style="transform: rotate(-0.5deg); background-color: #1877F2; border-color: var(--ink);">
+                    <div class="card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                        <h3 class="card-title" style="color: white;">Contoh Postingan FB</h3>
+                    </div>
+                    <p style="font-size: 12px; margin-bottom: 16px; color: white;">Biar lu ada bayangan, nih contoh nyatanya kalau lu mau posting promosi ke grup Facebook. Gas tiru aja formatnya bos!</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <img src="https://i.ibb.co.com/Kj2C31dF/Screenshot-20260614-173318.jpg" alt="Contoh Postingan FB 1" class="post-img" style="border-radius: var(--sketch-radius);">
+                        <img src="https://i.ibb.co.com/9HpDHMtj/Screenshot-20260614-173239.jpg" alt="Contoh Postingan FB 2" class="post-img" style="border-radius: var(--sketch-radius-alt);">
+                    </div>
+                </div>
+
+                <div class="sketch-card" style="transform: rotate(0.5deg); background-color: #010101; border-color: var(--ink);">
+                    <div class="card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+                        <h3 class="card-title" style="color: white;">Contoh Postingan TikTok</h3>
+                    </div>
+                    <p style="font-size: 12px; margin-bottom: 16px; color: #e2e8f0;">Buat lu yang pengen gempur promosi lewat jalur FYP TikTok, nih contoh visual kerennya. Tinggal screenshoot, edit tipis-tipis, langsung upload bos!</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <img src="https://i.ibb.co.com/RGNLTfBG/Screenshot-20260614-183929.jpg" alt="Contoh Postingan TikTok 1" class="post-img" style="border-radius: var(--sketch-radius-alt);">
+                        <img src="https://i.ibb.co.com/XrZHHpNV/Screenshot-20260614-183917.jpg" alt="Contoh Postingan TikTok 2" class="post-img" style="border-radius: var(--sketch-radius);">
+                    </div>
+                </div>
             </div>
 
             <div id="page-profil" class="page">
@@ -531,7 +713,27 @@
                     <div class="auth-logo" style="margin: 0 auto 12px; background: white; width: 80px; height: 80px; font-size: 36px; font-family: var(--font-hand); line-height: 80px;" id="ui-avatar-profil">?</div>
                     <h2 class="card-title" id="ui-name-profil" style="font-size: 24px; margin-bottom: 4px;">---</h2>
                     <div id="ui-verif-badge-profil" class="badge pending" style="margin-bottom: 8px;">
-                        <i data-lucide="award" size="12"></i> Afiliator Pro
+                        Menghitung Rank...
+                    </div>
+                </div>
+
+                <div class="sketch-card" style="transform: rotate(-0.5deg);">
+                    <div class="card-header">
+                        <i data-lucide="smile" size="18" stroke-width="2.5"></i>
+                        <h3 class="card-title">Pilih Avatar Doodle</h3>
+                    </div>
+                    <p style="font-size: 11px; margin-bottom: 8px;">Ganti muka profil lu biar makin asik.</p>
+                    <div class="avatar-grid">
+                        <div class="avatar-box" data-icon="initial" onclick="selectAvatar('initial')">A</div>
+                        <div class="avatar-box" data-icon="smile" onclick="selectAvatar('smile')"><i data-lucide="smile"></i></div>
+                        <div class="avatar-box" data-icon="ghost" onclick="selectAvatar('ghost')"><i data-lucide="ghost"></i></div>
+                        <div class="avatar-box" data-icon="bot" onclick="selectAvatar('bot')"><i data-lucide="bot"></i></div>
+                        <div class="avatar-box" data-icon="cat" onclick="selectAvatar('cat')"><i data-lucide="cat"></i></div>
+                        <div class="avatar-box" data-icon="zap" onclick="selectAvatar('zap')"><i data-lucide="zap"></i></div>
+                        <div class="avatar-box" data-icon="sparkles" onclick="selectAvatar('sparkles')"><i data-lucide="sparkles"></i></div>
+                        <div class="avatar-box" data-icon="flame" onclick="selectAvatar('flame')"><i data-lucide="flame"></i></div>
+                        <div class="avatar-box" data-icon="rocket" onclick="selectAvatar('rocket')"><i data-lucide="rocket"></i></div>
+                        <div class="avatar-box" data-icon="star" onclick="selectAvatar('star')"><i data-lucide="star"></i></div>
                     </div>
                 </div>
 
@@ -567,9 +769,9 @@
                         <h3 class="card-title">Pusat Bantuan</h3>
                     </div>
                     <p style="font-size: 12px; margin-bottom: 12px;">Ada kendala? Atau mau lapor bug? Langsung aja chat Admin (fast respon kalau admin lagi ga tidur).</p>
-                    <a href="https://wa.me/6285719059542" target="_blank" style="text-decoration: none;">
+                    <a href="https://t.me/sweionf" target="_blank" style="text-decoration: none;">
                         <button class="btn-primary" style="background: var(--ink); color: white; border-radius: var(--sketch-radius-alt);">
-                            <i data-lucide="phone" size="16"></i> Chat WA: +62 857-1905-9542
+                            <i data-lucide="send" size="16"></i> Chat Telegram: @sweionf
                         </button>
                     </a>
                 </div>
@@ -604,9 +806,36 @@
                 <i data-lucide="receipt" size="24"></i> 
                 <h3 class="card-title">Resi Penarikan</h3>
             </div>
-            <div id="receipt-content" style="font-family: var(--font-hand); font-size: 14px; line-height: 1.8;">
-                </div>
+            <div id="receipt-content" style="font-family: var(--font-hand); font-size: 14px; line-height: 1.8;"></div>
             <button class="btn-primary" onclick="closeReceipt()" style="margin-top: 20px; background: var(--ink); color: white;">Tutup Resi</button>
+        </div>
+    </div>
+
+    <div id="asset-preview-modal" class="modal-overlay" onclick="closeAssetModal()">
+        <div class="asset-popup-card" onclick="event.stopPropagation()">
+            <div class="card-header" style="justify-content: space-between; border-bottom: 2px dashed var(--ink); padding-bottom: 10px; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="image" size="20" stroke-width="2.5"></i>
+                    <h3 class="card-title" id="asset-popup-title">Nama Aset</h3>
+                </div>
+                <div style="cursor: pointer; padding: 4px; display: flex; align-items: center;" onclick="closeAssetModal()">
+                    <i data-lucide="x" size="20" stroke-width="3"></i>
+                </div>
+            </div>
+            
+            <div class="asset-img-container">
+                <div id="asset-img-loader" class="img-loader"></div>
+                <img id="asset-popup-img" src="" alt="Pratinjau Aset Konten">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-action" onclick="closeAssetModal()" style="background: var(--bg-paper-darker); font-family: var(--font-hand); font-size: 14px;">
+                    <i data-lucide="arrow-left" size="14"></i> Kembali
+                </button>
+                <button id="asset-popup-download-btn" class="btn-primary" style="margin-top: 0; padding: 10px; font-size: 15px; flex: 1.5; background: var(--ink); color: white; display: flex; justify-content: center; align-items: center; gap: 6px; border: none; cursor: pointer;">
+                    Download <i data-lucide="download" size="16"></i>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -638,9 +867,13 @@
         );
 
         const PROMO_URL = 'https://miner.mineverse-chain.my.id/';
-        const COMISSION_RATE = 6000;
 
-        let STATE = { nodeId: null, refCode: null, isVerified: false, balance: 0, wdMethod: null, wdAmount: 0 };
+        // STATE diupdate tambah variabel fitur baru
+        let STATE = { 
+            nodeId: null, refCode: null, isVerified: false, balance: 0, 
+            wdMethod: null, wdAmount: 0, 
+            checkinHistory: [], checkinBalance: 0, avatarIcon: 'initial' 
+        };
         let windowHistory = []; 
 
         let toastTimeout;
@@ -653,6 +886,36 @@
             toast.classList.add('show');
             clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function showDynamicGreeting() {
+            const hour = new Date().getHours();
+            let text = "Selamat Pagi";
+            let icon = "sun";
+            let quote = "Awali hari dengan sebar link, biar cuan lu makin tebal!";
+            
+            if (hour >= 11 && hour < 15) {
+                text = "Selamat Siang"; 
+                icon = "cloud-sun"; 
+                quote = "Tetap semangat bos, cuan gak datang dari rebahan doang!";
+            } else if (hour >= 15 && hour < 19) {
+                text = "Selamat Sore"; 
+                icon = "sunset"; 
+                quote = "Waktunya nyantai sambil ngecek bawahan nambah berapa.";
+            } else if (hour >= 19 || hour < 4) {
+                text = "Selamat Malam"; 
+                icon = "moon"; 
+                quote = "Malam tenang, biarkan link afiliasi yang bekerja lembur.";
+            }
+
+            document.getElementById('greet-notif-title').innerHTML = `${text}, Bos! <i data-lucide="${icon}" size="20"></i>`;
+            document.getElementById('greet-notif-quote').innerText = `"${quote}"`;
+            
+            const notif = document.getElementById('greeting-toast');
+            lucide.createIcons({ root: notif });
+            
+            setTimeout(() => { notif.classList.add('show'); }, 500);
+            setTimeout(() => { notif.classList.remove('show'); }, 6500);
         }
 
         function toggleLoader(show) {
@@ -674,9 +937,9 @@
         }
 
         function switchPage(pageId, navElement) {
-            // TUTUP OTOMATIS: Semua overlay ditutup ketika klik navigasi lain
             closeWalletSheet();
             closeReceipt();
+            closeAssetModal();
 
             document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -697,10 +960,7 @@
             
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: 'CreatorLife Camp',
-                        text: textToShare,
-                    });
+                    await navigator.share({ title: 'CreatorLife Camp', text: textToShare });
                     showToast('Mantap, berhasil disebar!', 'success');
                 } catch (err) {
                     console.log('Batal sebar atau error', err);
@@ -717,11 +977,76 @@
             navigator.clipboard.writeText(promoText).then(() => showToast('Teks promosi sukses dicopy! Gas sebar!', 'success'));
         }
 
+        /* --- Asset Popup Logic --- */
+        function openAssetModal(title, imageUrl) {
+            document.getElementById('asset-popup-title').innerText = title;
+            
+            const imgEl = document.getElementById('asset-popup-img');
+            const loaderEl = document.getElementById('asset-img-loader');
+            
+            imgEl.style.display = 'none';
+            loaderEl.style.display = 'block';
+            
+            const downloadBtn = document.getElementById('asset-popup-download-btn');
+            const filename = `${title.replace(/\s+/g, '_')}.jpg`;
+            downloadBtn.onclick = function() {
+                forceDownloadAsset(imageUrl, filename);
+            };
+            
+            imgEl.onload = function() {
+                loaderEl.style.display = 'none';
+                imgEl.style.display = 'block';
+                imgEl.style.animation = 'popIn 0.3s ease';
+            };
+            
+            imgEl.src = imageUrl;
+
+            const modal = document.getElementById('asset-preview-modal');
+            modal.classList.add('show');
+            lucide.createIcons({ root: modal });
+        }
+
+        async function forceDownloadAsset(url, filename) {
+            const btn = document.getElementById('asset-popup-download-btn');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = `Sabar... <i data-lucide="loader" size="16"></i>`;
+            lucide.createIcons({ root: btn });
+            
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename;
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+                
+                showToast('Aset berhasil didownload! Gas posting.', 'success');
+            } catch (err) {
+                console.error('Download gagal:', err);
+                window.open(url, '_blank');
+                showToast('Browser lu ngeblok auto-download, gw buka di tab baru ya!', 'info');
+            } finally {
+                btn.innerHTML = originalText;
+                lucide.createIcons({ root: btn });
+            }
+        }
+
+        function closeAssetModal() {
+            document.getElementById('asset-preview-modal').classList.remove('show');
+        }
+
         function openWalletSheet() {
             const overlay = document.getElementById('wallet-sheet-overlay');
-            if (!overlay.classList.contains('show')) {
-                overlay.classList.add('show');
-            }
+            if (!overlay.classList.contains('show')) overlay.classList.add('show');
         }
 
         function closeWalletSheet() {
@@ -791,19 +1116,127 @@
             localStorage.removeItem('camp_session');
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('auth-screen').style.display = 'flex';
-            STATE = { nodeId: null, refCode: null, isVerified: false, balance: 0, wdMethod: null, wdAmount: 0 };
+            STATE = { nodeId: null, refCode: null, isVerified: false, balance: 0, wdMethod: null, wdAmount: 0, checkinHistory: [], checkinBalance: 0, avatarIcon: 'initial' };
             showToast('Dadah, balik lagi ya!', 'info');
         }
+
+        /* --- FUNGSI TAMBAHAN: AVATAR & CHECK-IN --- */
+
+        function getTodayStr() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        function renderCheckin() {
+            const grid = document.getElementById('ui-checkin-grid');
+            const todayStr = getTodayStr();
+            const hasCheckedInToday = STATE.checkinHistory.includes(todayStr);
+            const totalCheckins = STATE.checkinHistory.length;
+            const cycle = totalCheckins % 7; 
+            const completedInCycle = hasCheckedInToday ? (cycle === 0 ? 7 : cycle) : cycle;
+
+            let html = '';
+            for(let i=1; i<=7; i++) {
+                const isDone = i <= completedInCycle;
+                const className = isDone ? 'checkin-box done' : 'checkin-box';
+                html += `<div class="${className}">${isDone ? '' : i}</div>`;
+            }
+            grid.innerHTML = html;
+
+            const btn = document.getElementById('btn-checkin');
+            if(hasCheckedInToday) {
+                btn.style.background = 'var(--bg-paper-darker)';
+                btn.style.color = 'var(--ink-light)';
+                btn.innerHTML = `Udah Absen <i data-lucide="check" size="18"></i>`;
+                btn.onclick = null;
+            } else {
+                btn.style.background = 'var(--marker-green)';
+                btn.style.color = 'var(--ink)';
+                btn.innerHTML = `Absen Sekarang <i data-lucide="check-square" size="18"></i>`;
+                btn.onclick = doCheckin;
+            }
+            lucide.createIcons({ root: grid.parentElement });
+        }
+
+        async function doCheckin() {
+            const todayStr = getTodayStr();
+            if(STATE.checkinHistory.includes(todayStr)) return;
+
+            toggleLoader(true);
+            const reward = Math.floor(Math.random() * 31) + 50; // 50 - 80 rupiah
+            
+            const newHistory = [...STATE.checkinHistory, todayStr];
+            const newBalance = STATE.checkinBalance + reward;
+
+            const { error } = await DB.from('users').update({
+                checkin_history: newHistory,
+                checkin_balance: newBalance
+            }).eq('node_id', STATE.nodeId);
+
+            toggleLoader(false);
+            if(error) return showToast('Gagal absen bos, server lagi ampas.', 'error');
+
+            STATE.checkinHistory = newHistory;
+            STATE.checkinBalance = newBalance;
+            
+            showToast(`Mantap! Lu dapet bonus receh Rp ${reward}`, 'success');
+            renderCheckin();
+            
+            // Recalculate balance keseluruhan
+            fetchDownlines(); 
+        }
+
+        function renderAvatar() {
+            const charInit = STATE.nodeId.charAt(0).toUpperCase();
+            
+            // Inisial box grid handler
+            const initialBox = document.querySelector('.avatar-box[data-icon="initial"]');
+            if(initialBox) initialBox.innerText = charInit;
+
+            const avatarContent = STATE.avatarIcon === 'initial' 
+                ? charInit 
+                : `<i data-lucide="${STATE.avatarIcon}" size="36" stroke-width="2.5"></i>`;
+
+            const avatarContentSmall = STATE.avatarIcon === 'initial' 
+                ? charInit 
+                : `<i data-lucide="${STATE.avatarIcon}" size="24" stroke-width="2.5"></i>`;
+
+            document.getElementById('ui-avatar-tugas').innerHTML = avatarContentSmall;
+            document.getElementById('ui-avatar-profil').innerHTML = avatarContent;
+
+            // Highlight avatar yang lagi aktif di Profil
+            document.querySelectorAll('.avatar-box').forEach(box => {
+                box.classList.remove('active');
+                if(box.dataset.icon === STATE.avatarIcon) box.classList.add('active');
+            });
+
+            lucide.createIcons();
+        }
+
+        async function selectAvatar(icon) {
+            if(STATE.avatarIcon === icon) return;
+            toggleLoader(true);
+            const { error } = await DB.from('users').update({ avatar_icon: icon }).eq('node_id', STATE.nodeId);
+            toggleLoader(false);
+            
+            if(error) return showToast('Gagal ganti avatar, koneksi ampas', 'error');
+            
+            STATE.avatarIcon = icon;
+            renderAvatar();
+            showToast('Avatar baru lu mantap bos!', 'success');
+        }
+
+        /* --- END FUNGSI TAMBAHAN --- */
 
         async function bootDashboard(userData) {
             STATE.nodeId = userData.node_id;
             STATE.refCode = userData.ref_code || '';
             STATE.isVerified = userData.is_verified;
-
-            // Update UI Profil & Tugas
-            const avatarChar = STATE.nodeId.charAt(0).toUpperCase();
-            document.getElementById('ui-avatar-tugas').innerText = avatarChar;
-            document.getElementById('ui-avatar-profil').innerText = avatarChar;
+            
+            // Masukkan data fitur baru ke STATE
+            STATE.checkinHistory = userData.checkin_history || [];
+            STATE.checkinBalance = userData.checkin_balance || 0;
+            STATE.avatarIcon = userData.avatar_icon || 'initial';
             
             document.getElementById('ui-name-tugas').innerText = STATE.nodeId;
             document.getElementById('ui-name-profil').innerText = STATE.nodeId;
@@ -823,27 +1256,82 @@ Tunggu apa lagi? Ayo gabung ke CreatorLife sekarang juga dan mulai kumpulkan cua
 (Jangan lupa pake kode referral gw: ${STATE.refCode} biar dapat bonus bareng!)`;
             }
 
-            // Update Badge Verifikasi di Tugas & Profil
-            const badgeTugas = document.getElementById('ui-verif-badge-tugas');
-            const badgeProfil = document.getElementById('ui-verif-badge-profil');
-            
-            if (STATE.isVerified) {
-                badgeTugas.className = 'badge verified';
-                badgeTugas.innerHTML = `<i data-lucide="shield-check" size="12"></i> Node Valid`;
-                badgeProfil.className = 'badge verified';
-                badgeProfil.innerHTML = `<i data-lucide="shield-check" size="12"></i> Node Valid`;
-            } else {
-                badgeTugas.className = 'badge pending';
-                badgeTugas.innerHTML = `<i data-lucide="award" size="12"></i> Afiliator Pro`;
-                badgeProfil.className = 'badge pending';
-                badgeProfil.innerHTML = `<i data-lucide="award" size="12"></i> Afiliator Pro`;
-            }
-
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
 
+            showDynamicGreeting();
+
+            renderAvatar();
+            renderCheckin();
+
             await Promise.all([ fetchDownlines(), fetchHistory() ]);
             lucide.createIcons();
+        }
+
+        function updateRankUI(activeDownlines) {
+            const ranks = [
+                { name: 'Pemula', min: 0, max: 3, icon: 'target', color: 'var(--ink)' },
+                { name: 'Aktif', min: 4, max: 7, icon: 'flame', color: 'var(--ink)' },
+                { name: 'Pro', min: 8, max: 11, icon: 'zap', color: 'var(--marker-blue-strong)' },
+                { name: 'Elite', min: 12, max: 14, icon: 'gem', color: 'var(--marker-green-strong)' },
+                { name: 'Master', min: 15, max: 99999, icon: 'crown', color: 'var(--marker-yellow-strong)' }
+            ];
+
+            let currRank = ranks[0];
+            let nextRank = ranks[1];
+            
+            for (let i = 0; i < ranks.length; i++) {
+                if (activeDownlines >= ranks[i].min) {
+                    currRank = ranks[i];
+                    nextRank = ranks[i+1] || ranks[i];
+                }
+            }
+
+            document.getElementById('ui-current-rank').innerText = currRank.name;
+            document.getElementById('ui-current-rank').style.color = currRank.color;
+            
+            let progressPct = 100;
+            let textProgress = "Rank Maksimal Bro! Lanjut cari cuan!";
+            
+            if (currRank.name !== 'Master') {
+                document.getElementById('ui-next-rank').innerText = textProgress ? nextRank.name : '';
+                let needed = nextRank.min - activeDownlines;
+                textProgress = `Sikat! Butuh <b>${needed} bawahan valid</b> lagi buat naik ke ${nextRank.name}.`;
+                
+                let range = nextRank.min - currRank.min;
+                let currentProgress = activeDownlines - currRank.min;
+                progressPct = (currentProgress / range) * 100;
+            } else {
+                document.getElementById('ui-next-rank').innerText = "MAX TIER";
+            }
+
+            setTimeout(() => {
+                document.getElementById('ui-rank-progress').style.width = `${progressPct}%`;
+            }, 300);
+            document.getElementById('ui-rank-text').innerHTML = textProgress;
+            
+            const statusNode = STATE.isVerified ? "Node Valid" : "Pending";
+            const newBadgeHTML = `<i data-lucide="${currRank.icon}" size="12"></i> Rank ${currRank.name} (${statusNode})`;
+            
+            const badgeTugas = document.getElementById('ui-verif-badge-tugas');
+            const badgeProfil = document.getElementById('ui-verif-badge-profil');
+            
+            if(badgeTugas) {
+                badgeTugas.innerHTML = newBadgeHTML;
+                badgeTugas.className = STATE.isVerified ? 'badge verified' : 'badge pending';
+            }
+            if(badgeProfil) {
+                badgeProfil.innerHTML = newBadgeHTML;
+                badgeProfil.className = STATE.isVerified ? 'badge verified' : 'badge pending';
+            }
+        }
+
+        function getComissionRateForNode(index) {
+            if (index <= 3) return 2500;
+            if (index <= 7) return 3375;
+            if (index <= 11) return 4250;
+            if (index <= 14) return 5125;
+            return 6000;
         }
 
         async function fetchDownlines() {
@@ -863,11 +1351,19 @@ Tunggu apa lagi? Ayo gabung ke CreatorLife sekarang juga dan mulai kumpulkan cua
             document.getElementById('tugas-stat-active').innerText = active;
             document.getElementById('tugas-stat-pending').innerText = pending;
 
-            const grossBalance = active * COMISSION_RATE;
+            updateRankUI(active);
+
+            let grossBalance = 0;
+            for(let i=1; i<=active; i++) {
+                grossBalance += getComissionRateForNode(i);
+            }
+
             const { data: wdData } = await DB.from('camp_withdrawals').select('amount').eq('node_id', STATE.nodeId).neq('status', 'rejected');
             const totalWd = (wdData || []).reduce((sum, item) => sum + parseFloat(item.amount), 0);
             
-            STATE.balance = grossBalance - totalWd;
+            // Tambahkan cuan dari checkin balance ke total balance
+            STATE.balance = grossBalance + (STATE.checkinBalance || 0) - totalWd;
+            
             const balanceText = `Rp ${STATE.balance.toLocaleString('id-ID')}`;
             document.getElementById('ui-balance').innerText = balanceText;
             document.getElementById('ui-balance-wd').innerText = balanceText;
@@ -878,12 +1374,22 @@ Tunggu apa lagi? Ayo gabung ke CreatorLife sekarang juga dan mulai kumpulkan cua
             listEl.innerHTML = '';
             const sorted = [...data].sort((a, b) => (b.is_verified ? 1 : 0) - (a.is_verified ? 1 : 0));
             
+            let activeCount = 1;
+
             sorted.forEach(dl => {
                 const init = dl.node_id.charAt(0).toUpperCase();
                 const isV = dl.is_verified;
                 const statusTxt = isV ? 'Tervalidasi' : 'Nunggu Bayar';
-                const earnTxt = isV ? '+6k' : '0';
+                
+                let earnTxt = 'Rp 0';
+                if (isV) {
+                    let rate = getComissionRateForNode(activeCount);
+                    earnTxt = '+Rp ' + rate.toLocaleString('id-ID');
+                    activeCount++;
+                }
+
                 const bgIcon = isV ? 'var(--marker-green)' : 'var(--bg-paper)';
+                const textColor = isV ? 'var(--marker-green-strong)' : 'inherit';
                 
                 listEl.innerHTML += `
                     <div class="list-item">
@@ -895,7 +1401,7 @@ Tunggu apa lagi? Ayo gabung ke CreatorLife sekarang juga dan mulai kumpulkan cua
                             </div>
                         </div>
                         <div class="item-right">
-                            <div class="item-amount">Rp ${earnTxt}</div>
+                            <div class="item-amount" style="color: ${textColor};">${earnTxt}</div>
                         </div>
                     </div>
                 `;
@@ -986,7 +1492,7 @@ Tunggu apa lagi? Ayo gabung ke CreatorLife sekarang juga dan mulai kumpulkan cua
                                 <div class="item-sub">${dateStr}</div>
                             </div>
                         </div>
-                        <div class="item-right" style="text-align:right;">
+                        <div class="list-right" style="text-align:right;">
                             <div class="item-amount">${parseFloat(w.amount).toLocaleString('id-ID')}</div>
                             <div class="item-sub">${stTxt}</div>
                         </div>
